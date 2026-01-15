@@ -3,7 +3,6 @@ package com.miraitag.pokedex.ui.screens.home
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,6 +47,7 @@ import coil.request.ImageRequest
 import com.miraitag.pokedex.Pokemon
 import com.miraitag.pokedex.R
 import com.miraitag.pokedex.pokemons
+import com.miraitag.pokedex.ui.common.permissionRequestEffect
 import com.miraitag.pokedex.ui.theme.PokedexTheme
 import java.util.Locale
 
@@ -67,6 +67,7 @@ fun Screen(content: @Composable () -> Unit) {
 fun HomeScreen(onPokemonClick: (Pokemon) -> Unit) {
     val context = LocalContext.current
     var searchText by remember { mutableStateOf("") }
+
 
     val speechLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
@@ -96,18 +97,19 @@ fun HomeScreen(onPokemonClick: (Pokemon) -> Unit) {
         speechLauncher.launch(intent)
     }
 
-    val permissionLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                launchVoiceInput()
-            } else {
-                Toast.makeText(
-                    context,
-                    context.resources.getString(R.string.voice_recorder_permission_denied),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+    val requestVoicePermission = permissionRequestEffect(
+        permission = Manifest.permission.RECORD_AUDIO,
+        onGranted = {
+            launchVoiceInput()
+        },
+        onDenied = {
+            Toast.makeText(
+                context,
+                context.resources.getString(R.string.voice_recorder_permission_denied),
+                Toast.LENGTH_LONG
+            ).show()
         }
+    )
 
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -115,14 +117,7 @@ fun HomeScreen(onPokemonClick: (Pokemon) -> Unit) {
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        val permissionCheckResult =
-                            context.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-
-                        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                            launchVoiceInput()
-                        } else {
-                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                        }
+                        requestVoicePermission()
                     }
                 ) {
                     Icon(
