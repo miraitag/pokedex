@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -26,8 +26,8 @@ android {
         val properties = Properties()
         properties.load(project.rootProject.file("local.properties").readText().byteInputStream())
 
-        val pokemonApi = properties.getProperty("API_KEY_POKEMONS", "")
-        buildConfigField("String", "API_KEY", "\"$pokemonApi\"")
+        val pokemonApi = properties.getProperty("POKEMONS_API_KEY", "")
+        buildConfigField("String", "POKEMONS_API_KEY", "\"$pokemonApi\"")
     }
 
     buildTypes {
@@ -67,8 +67,8 @@ dependencies {
     implementation(libs.compose.coil)
     implementation(libs.bundles.compose.icons)
     implementation(libs.bundles.compose.navigation)
-    implementation(libs.kotlinx.serialization.core)
-    implementation(libs.bundles.retrofit)
+    implementation(libs.retrofit)
+    implementation(libs.bundles.serialization)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
