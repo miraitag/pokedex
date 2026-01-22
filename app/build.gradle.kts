@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,6 +22,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").readText().byteInputStream())
+
+        val pokemonApi = properties.getProperty("API_KEY_POKEMONS", "")
+        buildConfigField("String", "API_KEY", "\"$pokemonApi\"")
     }
 
     buildTypes {
@@ -43,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -60,7 +68,7 @@ dependencies {
     implementation(libs.bundles.compose.icons)
     implementation(libs.bundles.compose.navigation)
     implementation(libs.kotlinx.serialization.core)
-
+    implementation(libs.bundles.retrofit)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
