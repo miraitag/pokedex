@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.miraitag.pokedex.Pokemon
+import com.miraitag.pokedex.data.Pokemon
 import com.miraitag.pokedex.R
 import com.miraitag.pokedex.ui.screens.home.Screen
 

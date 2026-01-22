@@ -1,4 +1,4 @@
-package com.miraitag.pokedex
+package com.miraitag.pokedex.data
 
 import kotlinx.serialization.Serializable
 

@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.miraitag.pokedex.Pokemon
+import com.miraitag.pokedex.data.Pokemon
 import com.miraitag.pokedex.ui.screens.detail.DetailScreen
 import com.miraitag.pokedex.ui.screens.home.HomeScreen
 import kotlinx.serialization.Serializable
