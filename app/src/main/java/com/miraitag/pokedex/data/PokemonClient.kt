@@ -15,6 +15,9 @@ object PokemonClient {
         .addInterceptor(::apiKeyQuery)
         .build()
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
 
     val instance = Retrofit.Builder()
         .baseUrl("https://pokeapi.co/api/v2/")
