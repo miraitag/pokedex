@@ -1,5 +1,6 @@
 package com.miraitag.pokedex.ui.screens.detail
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,13 +25,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.miraitag.pokedex.data.Pokemon
 import com.miraitag.pokedex.R
+import com.miraitag.pokedex.ui.common.parseTypeToColor
+import com.miraitag.pokedex.ui.model.PokemonItem
 import com.miraitag.pokedex.ui.screens.home.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(pokemon: Pokemon, onBack: () -> Unit) {
+fun DetailScreen(pokemon: PokemonItem, onBack: () -> Unit) {
     Screen {
         Scaffold(
             topBar = {
@@ -55,13 +57,14 @@ fun DetailScreen(pokemon: Pokemon, onBack: () -> Unit) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .memoryCachePolicy(policy = CachePolicy.ENABLED)
-                        .diskCachePolicy(policy = CachePolicy.DISABLED).data(data = pokemon.image)
+                        .diskCachePolicy(policy = CachePolicy.DISABLED)
+                        .data(data = pokemon.image)
                         .build(),
                     contentDescription = pokemon.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
+                        .background(color = parseTypeToColor(type = pokemon.type))
                         .fillMaxWidth()
-                        .aspectRatio(16 / 9f)
                 )
                 Text(
                     text = pokemon.name,

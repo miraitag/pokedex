@@ -7,6 +7,7 @@ import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -44,14 +46,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.miraitag.pokedex.data.Pokemon
 import com.miraitag.pokedex.R
+import com.miraitag.pokedex.ui.common.parseTypeToColor
+import com.miraitag.pokedex.ui.model.PokemonItem
 import com.miraitag.pokedex.ui.common.permissionRequestEffect
 import com.miraitag.pokedex.ui.theme.PokedexTheme
 import java.util.Locale
@@ -70,51 +76,72 @@ fun Screen(content: @Composable () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onPokemonClick: (Pokemon) -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    onPokemonClick: (PokemonItem) -> Unit
 ) {
     val context = LocalContext.current
     var searchText by remember { mutableStateOf("") }
-    val state = viewModel.state
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvents.collect { event ->
+            when (event) {
+                is HomeEvents.NavigateToDetail -> {
+                    searchText = ""
+                    onPokemonClick(event.pokemonItem)
+                }
+
+                is HomeEvents.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     val speechLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val result = result.data
-                val resultList = result?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                val spokenText = resultList?.first() ?: ""
+                val spokenText =
+                    result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                        ?.firstOrNull() ?: ""
                 Toast.makeText(
                     context,
                     context.resources.getString(R.string.voice_recorder_result, spokenText),
                     Toast.LENGTH_SHORT
                 ).show()
+                if (spokenText.isNotEmpty()) {
+                    searchText = spokenText
+                    viewModel.fetchPokemonByName(spokenText)
+                }
             }
         }
 
-    LaunchedEffect(Unit) {
-        viewModel.onReadyUI()
-    }
-
     fun launchVoiceInput() {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(
-            RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        ).putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault()).putExtra(
-            RecognizerIntent.EXTRA_PROMPT,
-            context.resources.getString(R.string.voice_recorder_init_message)
-        )
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            .putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            .putExtra(
+                RecognizerIntent.EXTRA_PROMPT,
+                context.resources.getString(R.string.voice_recorder_init_message)
+            )
         speechLauncher.launch(intent)
     }
 
     val requestVoicePermission =
-        permissionRequestEffect(permission = Manifest.permission.RECORD_AUDIO, onGranted = {
-            launchVoiceInput()
-        }, onDenied = {
-            Toast.makeText(
-                context,
-                context.resources.getString(R.string.voice_recorder_permission_denied),
-                Toast.LENGTH_LONG
-            ).show()
-        })
+        permissionRequestEffect(
+            permission = Manifest.permission.RECORD_AUDIO,
+            onGranted = { launchVoiceInput() },
+            onDenied = {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.voice_recorder_permission_denied),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        )
 
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -155,8 +182,11 @@ fun HomeScreen(
                     modifier = Modifier.padding(4.dp),
                     contentPadding = padding
                 ) {
-                    items(items = state.pokemons, key = { it.id }) {
-                        PokemonItem(pokemon = it, onClick = { onPokemonClick(it) })
+                    items(items = state.pokemons, key = { it.id }) { pokemon ->
+                        PokemonItem(
+                            pokemon = pokemon,
+                            onClick = { onPokemonClick(pokemon) }
+                        )
                     }
                 }
             }
@@ -165,12 +195,23 @@ fun HomeScreen(
 }
 
 @Composable
-fun PokemonItem(pokemon: Pokemon, onClick: () -> Unit) {
-    Column(modifier = Modifier.clickable(onClick = onClick)) {
+fun PokemonItem(
+    pokemon: PokemonItem,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .background(color = parseTypeToColor(pokemon.type))
+            .clip(MaterialTheme.shapes.small)
+            .clickable(onClick = onClick)
+    ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
+                .data(pokemon.image)
+                .crossfade(true)
                 .memoryCachePolicy(policy = CachePolicy.ENABLED)
-                .diskCachePolicy(policy = CachePolicy.DISABLED).data(pokemon.image).build(),
+                .diskCachePolicy(policy = CachePolicy.DISABLED)
+                .build(),
             contentDescription = pokemon.name,
             modifier = Modifier
                 .fillMaxWidth()
@@ -178,11 +219,16 @@ fun PokemonItem(pokemon: Pokemon, onClick: () -> Unit) {
                 .clip(MaterialTheme.shapes.small)
         )
         Text(
+            modifier = Modifier
+                .padding(horizontal = 2.dp)
+                .padding(vertical = 16.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
             text = pokemon.name,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.headlineSmall,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(8.dp)
         )
     }
 }

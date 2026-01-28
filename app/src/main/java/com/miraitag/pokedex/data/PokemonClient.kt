@@ -22,7 +22,7 @@ object PokemonClient {
     val instance = Retrofit.Builder()
         .baseUrl("https://pokeapi.co/api/v2/")
         .client(okHttpClient)
-        .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create<PokemonService>()
 }
