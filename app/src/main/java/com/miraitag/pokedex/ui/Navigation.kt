@@ -34,8 +34,8 @@ fun NavigationScreen() {
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreenStateFull(
-                    onPokemonClick = { pokemon ->
-                        backStack.add(Detail(pokemon = pokemon))
+                    onNavigateToDetailPokemon = { pokemon ->
+                       backStack.add(Detail(pokemon = pokemon))
                     }
                 )
             }

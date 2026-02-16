@@ -10,14 +10,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.miraitag.pokedex.R
 import com.miraitag.pokedex.ui.common.permissionRequestEffect
@@ -26,47 +20,36 @@ import java.util.Locale
 
 @Composable
 fun HomeScreenStateFull(
-    onPokemonClick: (PokemonItem) -> Unit
+    onNavigateToDetailPokemon: (PokemonItem) -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel()
     val context = LocalContext.current
-    var searchText by remember { mutableStateOf("") }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val lifecycle = LocalLifecycleOwner.current
 
-    LaunchedEffect(viewModel.uiEvents, lifecycle) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            viewModel.uiEvents.collect { event ->
-                when (event) {
-                    is HomeEvents.NavigateToDetail -> {
-                        searchText = ""
-                        onPokemonClick(event.pokemonItem)
-                    }
-
-                    is HomeEvents.ShowError -> {
-                        Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+    LaunchedEffect(state.pokemonToNavigate) {
+        state.pokemonToNavigate?.let { pokemon ->
+            onNavigateToDetailPokemon(pokemon)
+            viewModel.onNavigationHandled()
         }
+    }
 
+    LaunchedEffect(state.showMessageError) {
+        state.showMessageError?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.onErrorShown()
+        }
     }
 
     val speechLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val spokenText =
-                    result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                        ?.firstOrNull() ?: ""
+                val spokenText = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
                 Toast.makeText(
                     context,
                     context.resources.getString(R.string.voice_recorder_result, spokenText),
                     Toast.LENGTH_SHORT
                 ).show()
-                if (spokenText.isNotEmpty()) {
-                    searchText = spokenText
-                    viewModel.fetchPokemonByName(spokenText)
-                }
+                spokenText?.let { viewModel.fetchPokemonByName(it) }
             }
         }
 
@@ -100,6 +83,6 @@ fun HomeScreenStateFull(
     HomeScreenStateLess(
         state = state,
         onVoiceSearch = requestVoicePermission,
-        onPokemonClick = onPokemonClick,
+        onNavigateToDetailPokemon = onNavigateToDetailPokemon,
     )
 }

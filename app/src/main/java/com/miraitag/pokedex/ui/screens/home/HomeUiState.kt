@@ -8,4 +8,6 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val limit: Int = 0,
     val pokemons: List<PokemonItem> = emptyList(),
+    val showMessageError: String? = null,
+    val pokemonToNavigate: PokemonItem? = null
 )

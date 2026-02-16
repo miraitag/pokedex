@@ -9,10 +9,8 @@ import com.miraitag.pokedex.ui.model.PokemonItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,20 +21,18 @@ class HomeViewModel : ViewModel() {
     private val _state = MutableStateFlow(HomeUiState())
     val state = _state.asStateFlow()
 
-    private val _uiEvents = Channel<HomeEvents>()
-    val uiEvents = _uiEvents.receiveAsFlow()
-
     init {
-        onReadyUI()
+        fetchPokemonsInitial()
     }
 
-    fun onReadyUI() {
+    fun fetchPokemonsInitial() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
             val pokemons = fetchPokemons()
             _state.update {
                 it.copy(
-                    isLoading = false, pokemons = pokemons
+                    isLoading = false,
+                    pokemons = pokemons
                 )
             }
         }
@@ -53,16 +49,27 @@ class HomeViewModel : ViewModel() {
                     val pokemons = if (isPokemonExist) state.pokemons else state.pokemons + pokemon
                     state.copy(
                         isLoading = false,
-                        pokemons = pokemons
+                        pokemons = pokemons,
+                        pokemonToNavigate = pokemon
                     )
                 }
-
-                _uiEvents.send(HomeEvents.NavigateToDetail(pokemon))
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false) }
-                _uiEvents.send(HomeEvents.ShowError("No se encontro a $name"))
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        showMessageError = "No se encontro a $name"
+                    )
+                }
             }
         }
+    }
+
+    fun onErrorShown() {
+        _state.update { it.copy(showMessageError = null) }
+    }
+
+    fun onNavigationHandled() {
+        _state.update { it.copy(pokemonToNavigate = null) }
     }
 
     private suspend fun fetchPokemons(): List<PokemonItem> = withContext(Dispatchers.IO) {

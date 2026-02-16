@@ -59,7 +59,7 @@ fun Screen(content: @Composable () -> Unit) {
 fun HomeScreenStateLess(
     state: HomeUiState,
     onVoiceSearch: () -> Unit,
-    onPokemonClick: (PokemonItem) -> Unit,
+    onNavigateToDetailPokemon: (PokemonItem) -> Unit,
 ) {
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -93,7 +93,7 @@ fun HomeScreenStateLess(
                     items(items = state.pokemons, key = { it.id }) { pokemon ->
                         PokemonItem(
                             pokemon = pokemon,
-                            onClick = { onPokemonClick(pokemon) }
+                            onClick = { onNavigateToDetailPokemon(pokemon) }
                         )
                     }
                 }
