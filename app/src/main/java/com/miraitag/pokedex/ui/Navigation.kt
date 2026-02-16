@@ -8,12 +8,13 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.miraitag.pokedex.ui.model.PokemonItem
-import com.miraitag.pokedex.ui.screens.detail.DetailScreen
-import com.miraitag.pokedex.ui.screens.home.HomeScreen
+import com.miraitag.pokedex.ui.screens.detail.DetailScreenStateFull
+import com.miraitag.pokedex.ui.screens.home.HomeScreenStateFull
 import kotlinx.serialization.Serializable
 
 @Serializable
 data object Home : NavKey
+
 @Serializable
 data class Detail(val pokemon: PokemonItem) : NavKey
 
@@ -32,14 +33,14 @@ fun NavigationScreen() {
         ),
         entryProvider = entryProvider {
             entry<Home> {
-                HomeScreen(
-                    onPokemonClick = {
-                        backStack.add(Detail(it))
+                HomeScreenStateFull(
+                    onPokemonClick = { pokemon ->
+                        backStack.add(Detail(pokemon = pokemon))
                     }
                 )
             }
             entry<Detail> {
-                DetailScreen(
+                DetailScreenStateFull(
                     pokemon = it.pokemon,
                     onBack = { backStack.removeLastOrNull() }
                 )

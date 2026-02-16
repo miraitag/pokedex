@@ -1,13 +1,14 @@
 package com.miraitag.pokedex.data
 
-class PokemonRepository() {
+class PokemonRepository(private val pokemonService: PokemonService) {
 
     suspend fun fetchPokemonByName(name: String): PokemonItem {
-        val response = PokemonClient.instance.fetchPokemonByNameOrId(name)
+        val response = pokemonService.fetchPokemonByNameOrId(name)
         return response.toDataModel()
     }
 }
-private fun PokemonByNameOrIdResponse.toDataModel(): PokemonItem  {
+
+private fun PokemonByNameOrIdResponse.toDataModel(): PokemonItem {
     return PokemonItem(
         id = id,
         name = name,

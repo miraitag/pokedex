@@ -9,5 +9,9 @@ data class PokemonItem(
     val name: String,
     val image: String,
     val id: Int,
-    val type: String
+    val type: String,
+    val abilities: String,
+    val forms: String,
+    val weight: String,
+    val sprites: List<String?>
 )

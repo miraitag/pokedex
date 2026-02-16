@@ -2,9 +2,10 @@ package com.miraitag.pokedex.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.miraitag.pokedex.ui.model.PokemonItem
+import com.miraitag.pokedex.data.PokemonClient
 import com.miraitag.pokedex.data.PokemonRepository
 import com.miraitag.pokedex.ui.mappers.toUiModel
+import com.miraitag.pokedex.ui.model.PokemonItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -17,7 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HomeViewModel : ViewModel() {
-    private val repository = PokemonRepository()
+    private val repository = PokemonRepository(PokemonClient.instance)
 
     private val _state = MutableStateFlow(HomeUiState())
     val state = _state.asStateFlow()

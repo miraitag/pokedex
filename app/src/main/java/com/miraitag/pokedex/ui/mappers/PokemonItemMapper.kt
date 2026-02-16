@@ -7,5 +7,10 @@ fun DataModel.toUiModel() = UiModel(
     name = name,
     image = sprites.other?.officialArtwork?.frontDefault ?: "",
     id = id,
-    type = types.firstOrNull()?.type?.name ?: "normal"
+    type = types.firstOrNull()?.type?.name ?: "normal",
+    abilities = abilities.joinToString(separator = ", ") { it.ability.name },
+    forms = forms.joinToString(separator = ", ") { it.name },
+    weight = weight.toString(),
+    sprites = listOf(sprites.frontDefault, sprites.backDefault)
+
 )

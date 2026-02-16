@@ -1,32 +1,22 @@
 package com.miraitag.pokedex.ui.screens.home
 
-import android.Manifest
-import android.app.Activity
-import android.content.Intent
-import android.speech.RecognizerIntent
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,12 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -50,17 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.miraitag.pokedex.R
 import com.miraitag.pokedex.ui.common.parseTypeToColor
+import com.miraitag.pokedex.ui.components.LoadingProgressIndicator
 import com.miraitag.pokedex.ui.model.PokemonItem
-import com.miraitag.pokedex.ui.common.permissionRequestEffect
 import com.miraitag.pokedex.ui.theme.PokedexTheme
-import java.util.Locale
 
 @Composable
 fun Screen(content: @Composable () -> Unit) {
@@ -75,82 +56,16 @@ fun Screen(content: @Composable () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
-    onPokemonClick: (PokemonItem) -> Unit
+fun HomeScreenStateLess(
+    state: HomeUiState,
+    onVoiceSearch: () -> Unit,
+    onPokemonClick: (PokemonItem) -> Unit,
 ) {
-    val context = LocalContext.current
-    var searchText by remember { mutableStateOf("") }
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(key1 = true) {
-        viewModel.uiEvents.collect { event ->
-            when (event) {
-                is HomeEvents.NavigateToDetail -> {
-                    searchText = ""
-                    onPokemonClick(event.pokemonItem)
-                }
-
-                is HomeEvents.ShowError -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    val speechLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val spokenText =
-                    result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                        ?.firstOrNull() ?: ""
-                Toast.makeText(
-                    context,
-                    context.resources.getString(R.string.voice_recorder_result, spokenText),
-                    Toast.LENGTH_SHORT
-                ).show()
-                if (spokenText.isNotEmpty()) {
-                    searchText = spokenText
-                    viewModel.fetchPokemonByName(spokenText)
-                }
-            }
-        }
-
-    fun launchVoiceInput() {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            .putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            .putExtra(
-                RecognizerIntent.EXTRA_PROMPT,
-                context.resources.getString(R.string.voice_recorder_init_message)
-            )
-        speechLauncher.launch(intent)
-    }
-
-    val requestVoicePermission =
-        permissionRequestEffect(
-            permission = Manifest.permission.RECORD_AUDIO,
-            onGranted = { launchVoiceInput() },
-            onDenied = {
-                Toast.makeText(
-                    context,
-                    context.resources.getString(R.string.voice_recorder_permission_denied),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        )
-
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         Scaffold(
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        requestVoicePermission()
-                    }) {
+                FloatingActionButton(onClick = onVoiceSearch) {
                     Icon(
                         imageVector = Icons.Default.Mic,
                         contentDescription = stringResource(id = R.string.voice_recorder_search)
@@ -166,17 +81,10 @@ fun HomeScreen(
             contentWindowInsets = WindowInsets.safeDrawing
         ) { padding ->
             if (state.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.padding(padding))
-                }
+                LoadingProgressIndicator(modifier = Modifier.padding(padding))
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(120.dp),
+                    columns = GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(4.dp),
@@ -201,8 +109,8 @@ fun PokemonItem(
 ) {
     Column(
         modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
             .background(color = parseTypeToColor(pokemon.type))
-            .clip(MaterialTheme.shapes.small)
             .clickable(onClick = onClick)
     ) {
         AsyncImage(
