@@ -83,6 +83,6 @@ fun HomeScreenStateFull(
     HomeScreenStateLess(
         state = state,
         onVoiceSearch = requestVoicePermission,
-        onNavigateToDetailPokemon = onNavigateToDetailPokemon,
+        onPokemonClick = onNavigateToDetailPokemon,
     )
 }
