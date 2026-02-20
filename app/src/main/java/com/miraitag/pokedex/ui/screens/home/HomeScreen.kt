@@ -1,5 +1,6 @@
 package com.miraitag.pokedex.ui.screens.home
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -34,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -56,16 +61,36 @@ fun Screen(content: @Composable () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenStateLess(
-    state: HomeUiState,
-    onVoiceSearch: () -> Unit,
+fun HomeScreen(
     onPokemonClick: (PokemonItem) -> Unit,
 ) {
+    val viewModel: HomeViewModel = viewModel()
+    val context = LocalContext.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    val homeStateHolder = rememberHomeStateHolder(
+        onVoiceResultSuccess = { viewModel.fetchPokemonByName(it) }
+    )
+
+    LaunchedEffect(state.pokemonToNavigate) {
+        state.pokemonToNavigate?.let { pokemon ->
+            onPokemonClick(pokemon)
+            viewModel.onNavigationHandled()
+        }
+    }
+
+    LaunchedEffect(state.showMessageError) {
+        state.showMessageError?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.onErrorShown()
+        }
+    }
+
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         Scaffold(
             floatingActionButton = {
-                FloatingActionButton(onClick = onVoiceSearch) {
+                FloatingActionButton(onClick = homeStateHolder.requestVoicePermission) {
                     Icon(
                         imageVector = Icons.Default.Mic,
                         contentDescription = stringResource(id = R.string.voice_recorder_search)

@@ -9,7 +9,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.miraitag.pokedex.ui.model.PokemonItem
 import com.miraitag.pokedex.ui.screens.detail.DetailScreenStateFull
-import com.miraitag.pokedex.ui.screens.home.HomeScreenStateFull
+import com.miraitag.pokedex.ui.screens.home.HomeScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,9 +33,9 @@ fun NavigationScreen() {
         ),
         entryProvider = entryProvider {
             entry<Home> {
-                HomeScreenStateFull(
-                    onNavigateToDetailPokemon = { pokemon ->
-                       backStack.add(Detail(pokemon = pokemon))
+                HomeScreen(
+                    onPokemonClick = { pokemon ->
+                        backStack.add(Detail(pokemon = pokemon))
                     }
                 )
             }
