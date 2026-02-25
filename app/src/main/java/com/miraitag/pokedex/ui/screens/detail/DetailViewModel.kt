@@ -2,15 +2,20 @@ package com.miraitag.pokedex.ui.screens.detail
 
 import androidx.lifecycle.ViewModel
 import com.miraitag.pokedex.ui.model.PokemonItem
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class DetailViewModel : ViewModel() {
 
-    private val _uiEvents = Channel<DetailEvents>()
-    val uiEvents = _uiEvents.receiveAsFlow()
+    private val _state = MutableStateFlow(DetailUiState())
+    val state = _state.asStateFlow()
 
-    fun onFavoriteClicked(pokemon: PokemonItem) {
-        _uiEvents.trySend(DetailEvents.onFavoriteClicked(pokemon))
+    fun addFavoritePokemon(pokemon: PokemonItem) {
+        _state.update {
+            it.copy(
+                favoritePokemon = pokemon
+            )
+        }
     }
 }

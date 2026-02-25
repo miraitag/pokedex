@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -75,19 +74,18 @@ fun HomeScreen(
     LaunchedEffect(state.pokemonToNavigate) {
         state.pokemonToNavigate?.let { pokemon ->
             onPokemonClick(pokemon)
-            viewModel.onNavigationHandled()
+            viewModel.onAction(HomeEvents.ResetNavigation(pokemonItem = pokemon))
         }
     }
 
     LaunchedEffect(state.showMessageError) {
         state.showMessageError?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            viewModel.onErrorShown()
+            viewModel.onAction(HomeEvents.ShowError(message = it))
         }
     }
 
     Screen {
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         Scaffold(
             floatingActionButton = {
                 FloatingActionButton(onClick = homeStateHolder.requestVoicePermission) {
@@ -99,10 +97,10 @@ fun HomeScreen(
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Pokedex") }, scrollBehavior = scrollBehavior
+                    title = { Text("Pokedex") }, scrollBehavior = homeStateHolder.scrollBehavior
                 )
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.nestedScroll(homeStateHolder.scrollBehavior.nestedScrollConnection),
             contentWindowInsets = WindowInsets.safeDrawing
         ) { padding ->
             if (state.isLoading) {

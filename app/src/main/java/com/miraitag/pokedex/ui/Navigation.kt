@@ -8,7 +8,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.miraitag.pokedex.ui.model.PokemonItem
-import com.miraitag.pokedex.ui.screens.detail.DetailScreenStateFull
+import com.miraitag.pokedex.ui.screens.detail.DetailScreen
 import com.miraitag.pokedex.ui.screens.home.HomeScreen
 import kotlinx.serialization.Serializable
 
@@ -40,7 +40,7 @@ fun NavigationScreen() {
                 )
             }
             entry<Detail> {
-                DetailScreenStateFull(
+                DetailScreen(
                     pokemon = it.pokemon,
                     onBack = { backStack.removeLastOrNull() }
                 )

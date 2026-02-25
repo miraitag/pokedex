@@ -10,6 +10,9 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -17,8 +20,10 @@ import com.miraitag.pokedex.R
 import com.miraitag.pokedex.ui.common.permissionRequestEffect
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 class HomeStateHolder(
     val context: Context,
+    val scrollBehavior: TopAppBarScrollBehavior,
     private val onVoiceResultSuccess: (String) -> Unit
 ) {
 
@@ -29,7 +34,6 @@ class HomeStateHolder(
         if (result.resultCode == Activity.RESULT_OK) {
             val spokenText =
                 result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
-
             spokenText?.let {
                 showToast(context.getString(R.string.voice_recorder_result, it))
                 onVoiceResultSuccess(it)
@@ -57,14 +61,20 @@ class HomeStateHolder(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun rememberHomeStateHolder(
     context: Context = LocalContext.current,
-    onVoiceResultSuccess: (String) -> Unit
+    topAppBarScrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
+    onVoiceResultSuccess: (String) -> Unit,
 ): HomeStateHolder {
     // Usamos remember para que el StateHolder persista durante recomposiciones
     val stateHolder = remember(context, onVoiceResultSuccess) {
-        HomeStateHolder(context, onVoiceResultSuccess)
+        HomeStateHolder(
+            context = context,
+            scrollBehavior = topAppBarScrollBehavior,
+            onVoiceResultSuccess = onVoiceResultSuccess
+        )
     }
 
     // El launcher debe registrarse siempre en la composición

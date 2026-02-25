@@ -64,12 +64,11 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun onErrorShown() {
-        _state.update { it.copy(showMessageError = null) }
-    }
-
-    fun onNavigationHandled() {
-        _state.update { it.copy(pokemonToNavigate = null) }
+    fun onAction(action: HomeEvents) {
+        when (action) {
+            is HomeEvents.ResetNavigation -> _state.update { it.copy(pokemonToNavigate = null) }
+            is HomeEvents.ShowError -> _state.update { it.copy(showMessageError = action.message) }
+        }
     }
 
     private suspend fun fetchPokemons(): List<PokemonItem> = withContext(Dispatchers.IO) {

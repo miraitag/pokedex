@@ -15,14 +15,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -36,12 +39,21 @@ import com.miraitag.pokedex.ui.screens.home.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreenStateLess(
+fun DetailScreen(
     pokemon: PokemonItem,
-    viewModel: DetailViewModel,
-    snackbarHostState: SnackbarHostState,
     onBack: () -> Unit,
 ) {
+
+    val viewModel: DetailViewModel = viewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val detailStateHolder = rememberDetailStateHolder()
+
+    LaunchedEffect(state.favoritePokemon) {
+        state.favoritePokemon?.let {
+            detailStateHolder.showFavoriteMessage(it.name)
+        }
+    }
+
     Screen {
         Scaffold(
             topBar = {
@@ -58,11 +70,11 @@ fun DetailScreenStateLess(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { viewModel.onFavoriteClicked(pokemon) }) {
+                FloatingActionButton(onClick = { viewModel.addFavoritePokemon(pokemon) }) {
                     Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = null)
                 }
             },
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+            snackbarHost = { SnackbarHost(hostState = detailStateHolder.snackbarHostState) }
         ) { padding ->
             Column(
                 modifier = Modifier
