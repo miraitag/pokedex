@@ -1,6 +1,5 @@
 package com.miraitag.pokedex.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,7 +8,11 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.miraitag.pokedex.ui.theme.color.LocalPokemonColors
+import com.miraitag.pokedex.ui.theme.color.PokemonColors
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -40,6 +43,19 @@ fun PokedexTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+
+    val pokemonColors = if (darkTheme) {
+        PokemonColors(
+            text = Color.White,
+            background = Color.Black
+        )
+    } else {
+        PokemonColors(
+            text = Color.Black,
+            background = Color.White
+        )
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -50,9 +66,11 @@ fun PokedexTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(LocalPokemonColors provides pokemonColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

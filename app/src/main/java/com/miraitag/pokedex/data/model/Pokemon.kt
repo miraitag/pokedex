@@ -1,6 +1,6 @@
-package com.miraitag.pokedex.data
+package com.miraitag.pokedex.data.model
 
-data class PokemonItem(
+data class Pokemon(
     val id: Int,
     val name: String,
     val baseExperience: Int,
@@ -15,7 +15,8 @@ data class PokemonItem(
     val sprites: Sprites,
     val cries: Cries,
     val stats: List<Stats>,
-    val types: List<Types>
+    val types: List<Types>,
+    val isFavorite: Boolean
 ) {
     data class Types(
         val slot: Int,

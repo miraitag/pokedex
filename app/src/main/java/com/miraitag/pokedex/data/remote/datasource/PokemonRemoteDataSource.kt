@@ -1,15 +1,19 @@
-package com.miraitag.pokedex.data
+package com.miraitag.pokedex.data.remote.datasource
 
-class PokemonRepository(private val pokemonService: PokemonService) {
+import com.miraitag.pokedex.data.local.entities.PokemonEntity
+import com.miraitag.pokedex.data.remote.api.PokemonByNameResult
+import com.miraitag.pokedex.data.remote.api.PokemonClient
 
-    suspend fun fetchPokemonByName(name: String): PokemonItem {
-        val response = pokemonService.fetchPokemonByNameOrId(name)
+class PokemonRemoteDataSource {
+
+    suspend fun fetchPokemonByName(name: String): PokemonEntity {
+        val response = PokemonClient.instance.fetchPokemonByName(name)
         return response.toDataModel()
     }
 }
 
-private fun PokemonByNameOrIdResponse.toDataModel(): PokemonItem {
-    return PokemonItem(
+private fun PokemonByNameResult.toDataModel(): PokemonEntity {
+    return PokemonEntity(
         id = id,
         name = name,
         baseExperience = baseExperience,
@@ -18,58 +22,59 @@ private fun PokemonByNameOrIdResponse.toDataModel(): PokemonItem {
         order = order,
         weight = weight,
         abilities = abilities.map {
-            PokemonItem.Abilities(
+            PokemonEntity.Abilities(
                 isHidden = it.isHidden,
                 slot = it.slot,
-                ability = PokemonItem.NameBase(
+                ability = PokemonEntity.NameBase(
                     name = it.ability.name,
                     url = it.ability.url
                 )
             )
         },
         forms = forms.map {
-            PokemonItem.NameBase(
+            PokemonEntity.NameBase(
                 name = it.name,
                 url = it.url
             )
         },
         locationAreaEncounters = locationAreaEncounters,
-        species = PokemonItem.NameBase(
+        species = PokemonEntity.NameBase(
             name = species.name,
             url = species.url
         ),
-        sprites = PokemonItem.Sprites(
+        sprites = PokemonEntity.Sprites(
             backDefault = sprites.backDefault,
             frontDefault = sprites.frontDefault,
             frontShiny = sprites.frontShiny,
-            other = PokemonItem.OtherSprites(
-                officialArtwork = PokemonItem.OfficialArtwork(
+            other = PokemonEntity.OtherSprites(
+                officialArtwork = PokemonEntity.OfficialArtwork(
                     frontDefault = sprites.other?.officialArtwork?.frontDefault
                 )
             )
         ),
-        cries = PokemonItem.Cries(
+        cries = PokemonEntity.Cries(
             latest = cries.latest,
             legacy = cries.legacy
         ),
         stats = stats.map {
-            PokemonItem.Stats(
+            PokemonEntity.Stats(
                 baseStat = it.baseStat,
                 effort = it.effort,
-                stat = PokemonItem.NameBase(
+                stat = PokemonEntity.NameBase(
                     name = it.stat.name,
                     url = it.stat.url
                 )
             )
         },
         types = types.map {
-            PokemonItem.Types(
+            PokemonEntity.Types(
                 slot = it.slot,
-                type = PokemonItem.NameBase(
+                type = PokemonEntity.NameBase(
                     name = it.type.name,
                     url = it.type.url
                 )
             )
-        }
+        },
+        isFavorite = false
     )
 }

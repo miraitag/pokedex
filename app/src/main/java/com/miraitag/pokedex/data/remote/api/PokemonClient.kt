@@ -1,4 +1,4 @@
-package com.miraitag.pokedex.data
+package com.miraitag.pokedex.data.remote.api
 
 import com.miraitag.pokedex.BuildConfig
 import kotlinx.serialization.json.Json

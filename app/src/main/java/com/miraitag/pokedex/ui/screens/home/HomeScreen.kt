@@ -4,17 +4,21 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -27,6 +31,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,16 +41,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.miraitag.pokedex.R
 import com.miraitag.pokedex.ui.common.parseTypeToColor
 import com.miraitag.pokedex.ui.components.LoadingProgressIndicator
-import com.miraitag.pokedex.ui.model.PokemonItem
+import com.miraitag.pokedex.ui.model.Pokemon
 import com.miraitag.pokedex.ui.theme.PokedexTheme
+import com.miraitag.pokedex.ui.theme.color.PokemonTheme
 
 @Composable
 fun Screen(content: @Composable () -> Unit) {
@@ -61,25 +67,19 @@ fun Screen(content: @Composable () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onPokemonClick: (PokemonItem) -> Unit,
+    onPokemonClick: (Pokemon) -> Unit,
+    viewModel: HomeViewModel
 ) {
-    val viewModel: HomeViewModel = viewModel()
+
     val context = LocalContext.current
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val homeStateHolder = rememberHomeStateHolder(
         onVoiceResultSuccess = { viewModel.fetchPokemonByName(it) }
     )
 
-    LaunchedEffect(state.pokemonToNavigate) {
-        state.pokemonToNavigate?.let { pokemon ->
-            onPokemonClick(pokemon)
-            viewModel.onAction(HomeEvents.ResetNavigation(pokemonItem = pokemon))
-        }
-    }
-
-    LaunchedEffect(state.showMessageError) {
-        state.showMessageError?.let {
+    LaunchedEffect(uiState.showMessageError) {
+        uiState.showMessageError?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             viewModel.onAction(HomeEvents.ShowError(message = it))
         }
@@ -103,21 +103,41 @@ fun HomeScreen(
             modifier = Modifier.nestedScroll(homeStateHolder.scrollBehavior.nestedScrollConnection),
             contentWindowInsets = WindowInsets.safeDrawing
         ) { padding ->
-            if (state.isLoading) {
+            if (uiState.isLoading) {
                 LoadingProgressIndicator(modifier = Modifier.padding(padding))
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(4.dp),
-                    contentPadding = padding
-                ) {
-                    items(items = state.pokemons, key = { it.id }) { pokemon ->
-                        PokemonItem(
-                            pokemon = pokemon,
-                            onClick = { onPokemonClick(pokemon) }
+                if (uiState.pokemons.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            text = "No hay pokemons",
+                            color = PokemonTheme.colors.text
                         )
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(4.dp),
+                        contentPadding = padding
+                    ) {
+                        items(items = uiState.pokemons, key = { it.id }) { pokemon ->
+                            PokemonItem(
+                                isFavorite = pokemon.isFavorite,
+                                pokemon = pokemon,
+                                onClick = { onPokemonClick(pokemon) }
+                            )
+                        }
                     }
                 }
             }
@@ -127,7 +147,8 @@ fun HomeScreen(
 
 @Composable
 fun PokemonItem(
-    pokemon: PokemonItem,
+    isFavorite: Boolean,
+    pokemon: Pokemon,
     onClick: () -> Unit
 ) {
     Column(
@@ -136,19 +157,32 @@ fun PokemonItem(
             .background(color = parseTypeToColor(pokemon.type))
             .clickable(onClick = onClick)
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(pokemon.image)
-                .crossfade(true)
-                .memoryCachePolicy(policy = CachePolicy.ENABLED)
-                .diskCachePolicy(policy = CachePolicy.DISABLED)
-                .build(),
-            contentDescription = pokemon.name,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2 / 3f)
-                .clip(MaterialTheme.shapes.small)
-        )
+        Box {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(pokemon.image)
+                    .crossfade(true)
+                    .memoryCachePolicy(policy = CachePolicy.ENABLED)
+                    .diskCachePolicy(policy = CachePolicy.DISABLED)
+                    .build(),
+                contentDescription = pokemon.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2 / 3f)
+                    .clip(MaterialTheme.shapes.small)
+            )
+            if (isFavorite) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = stringResource(id = R.string.favorite_description),
+                    tint = MaterialTheme.colorScheme.inverseOnSurface,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                )
+            }
+        }
         Text(
             modifier = Modifier
                 .padding(horizontal = 2.dp)

@@ -1,7 +1,7 @@
 package com.miraitag.pokedex.ui.mappers
 
-import com.miraitag.pokedex.ui.model.PokemonItem as UiModel
-import com.miraitag.pokedex.data.PokemonItem as DataModel
+import com.miraitag.pokedex.data.model.Pokemon as DataModel
+import com.miraitag.pokedex.ui.model.Pokemon as UiModel
 
 fun DataModel.toUiModel() = UiModel(
     name = name,
@@ -11,6 +11,6 @@ fun DataModel.toUiModel() = UiModel(
     abilities = abilities.joinToString(separator = ", ") { it.ability.name },
     forms = forms.joinToString(separator = ", ") { it.name },
     weight = weight.toString(),
-    sprites = listOf(sprites.frontDefault, sprites.backDefault)
-
+    sprites = listOf(sprites.frontDefault, sprites.backDefault),
+    isFavorite = isFavorite
 )

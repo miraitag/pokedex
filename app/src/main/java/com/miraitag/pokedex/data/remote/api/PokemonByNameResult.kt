@@ -1,10 +1,10 @@
-package com.miraitag.pokedex.data
+package com.miraitag.pokedex.data.remote.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PokemonByNameOrIdResponse(
+data class PokemonByNameResult(
     val id: Int,
     val name: String,
     @SerialName("base_experience") val baseExperience: Int,

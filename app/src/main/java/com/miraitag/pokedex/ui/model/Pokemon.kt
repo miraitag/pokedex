@@ -1,11 +1,9 @@
 package com.miraitag.pokedex.ui.model
 
-import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Immutable
-data class PokemonItem(
+data class Pokemon(
     val name: String,
     val image: String,
     val id: Int,
@@ -13,5 +11,6 @@ data class PokemonItem(
     val abilities: String,
     val forms: String,
     val weight: String,
-    val sprites: List<String?>
+    val sprites: List<String?>,
+    val isFavorite: Boolean
 )

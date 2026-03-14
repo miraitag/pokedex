@@ -5,4 +5,6 @@
     <string name="voice_recorder_search">Buscar por voz</string>
     <string name="voice_recorder_result">Buscando: %s</string>
     <string name="voice_recorder_init_message">Di el nombre del Pokémon</string>
+
+    <string name="favorite_description">Favorite</string>
 </resources>

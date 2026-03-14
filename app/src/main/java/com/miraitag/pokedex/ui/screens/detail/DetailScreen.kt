@@ -8,16 +8,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -25,14 +24,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.miraitag.pokedex.R
 import com.miraitag.pokedex.ui.common.Heading
 import com.miraitag.pokedex.ui.common.parseTypeToColor
-import com.miraitag.pokedex.ui.model.PokemonItem
+import com.miraitag.pokedex.ui.model.Pokemon
 import com.miraitag.pokedex.ui.screens.detail.components.Properties
 import com.miraitag.pokedex.ui.screens.detail.components.Sprites
 import com.miraitag.pokedex.ui.screens.home.Screen
@@ -40,19 +38,13 @@ import com.miraitag.pokedex.ui.screens.home.Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    pokemon: PokemonItem,
+    pokemon: Pokemon,
+    viewModel: DetailViewModel,
     onBack: () -> Unit,
 ) {
 
-    val viewModel: DetailViewModel = viewModel()
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val detailStateHolder = rememberDetailStateHolder()
-
-    LaunchedEffect(state.favoritePokemon) {
-        state.favoritePokemon?.let {
-            detailStateHolder.showFavoriteMessage(it.name)
-        }
-    }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isFavoritePokemon = uiState.pokemon?.isFavorite ?: false
 
     Screen {
         Scaffold(
@@ -70,11 +62,13 @@ fun DetailScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { viewModel.addFavoritePokemon(pokemon) }) {
-                    Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = null)
+                FloatingActionButton(onClick = { viewModel.onFavoritePokemon() }) {
+                    Icon(
+                        imageVector = if (isFavoritePokemon) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = null
+                    )
                 }
             },
-            snackbarHost = { SnackbarHost(hostState = detailStateHolder.snackbarHostState) }
         ) { padding ->
             Column(
                 modifier = Modifier

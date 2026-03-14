@@ -32,8 +32,7 @@ class HomeStateHolder(
 
     fun onVoiceResult(result: ActivityResult) {
         if (result.resultCode == Activity.RESULT_OK) {
-            val spokenText =
-                result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            val spokenText = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
             spokenText?.let {
                 showToast(context.getString(R.string.voice_recorder_result, it))
                 onVoiceResultSuccess(it)
