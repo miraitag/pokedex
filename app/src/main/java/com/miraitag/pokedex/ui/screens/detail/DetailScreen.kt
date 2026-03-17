@@ -43,8 +43,8 @@ fun DetailScreen(
     onBack: () -> Unit,
 ) {
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isFavoritePokemon = uiState.pokemon?.isFavorite ?: false
+    val uiState: DetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isFavoritePokemon: Boolean = uiState.pokemon?.isFavorite ?: false
 
     Screen {
         Scaffold(

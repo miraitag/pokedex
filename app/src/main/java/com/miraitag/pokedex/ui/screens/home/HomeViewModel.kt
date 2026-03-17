@@ -2,9 +2,9 @@ package com.miraitag.pokedex.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.miraitag.pokedex.data.repository.PokemonRepository
 import com.miraitag.pokedex.ui.mappers.toUiModel
-import kotlinx.coroutines.Dispatchers
+import com.miraitag.pokedex.usecases.FetchPokemonAndSaveByNameUseCase
+import com.miraitag.pokedex.usecases.FetchPokemonsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,13 +15,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val repository: PokemonRepository
+    fetchPokemonsUseCase: FetchPokemonsUseCase,
+    private val fetchPokemonAndSaveByNameUseCase: FetchPokemonAndSaveByNameUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(HomeUiState())
+    private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState())
 
     val uiState: StateFlow<HomeUiState> = combine(
-        repository.allPokemons,
+        fetchPokemonsUseCase(),
         _uiState
     ) { pokemons, currentState ->
         val pokemonList = pokemons.map { it.toUiModel() }
@@ -52,9 +53,9 @@ class HomeViewModel(
         }
     }
 
-    fun fetchPokemonByName(name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.fetchAndSavePokemon(name)
+    fun fetchPokemonAndSavePokemonByName(name: String) {
+        viewModelScope.launch {
+            fetchPokemonAndSaveByNameUseCase(name)
         }
     }
 }

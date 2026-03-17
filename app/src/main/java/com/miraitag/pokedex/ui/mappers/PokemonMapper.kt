@@ -1,6 +1,6 @@
 package com.miraitag.pokedex.ui.mappers
 
-import com.miraitag.pokedex.data.model.Pokemon as DataModel
+import com.miraitag.pokedex.domain.Pokemon as DataModel
 import com.miraitag.pokedex.ui.model.Pokemon as UiModel
 
 fun DataModel.toUiModel() = UiModel(

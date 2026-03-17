@@ -2,7 +2,7 @@ package com.miraitag.pokedex
 
 import android.app.Application
 import androidx.room.Room
-import com.miraitag.pokedex.data.local.datasource.database.PokemonDataBase
+import com.miraitag.pokedex.framework.database.PokemonDataBase
 
 class App : Application() {
 

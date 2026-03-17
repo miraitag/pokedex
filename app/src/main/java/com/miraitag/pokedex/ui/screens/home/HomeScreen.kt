@@ -1,5 +1,6 @@
 package com.miraitag.pokedex.ui.screens.home
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -71,11 +72,11 @@ fun HomeScreen(
     viewModel: HomeViewModel
 ) {
 
-    val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context: Context = LocalContext.current
+    val uiState: HomeUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val homeStateHolder = rememberHomeStateHolder(
-        onVoiceResultSuccess = { viewModel.fetchPokemonByName(it) }
+        onVoiceResultSuccess = { viewModel.fetchPokemonAndSavePokemonByName(it) }
     )
 
     LaunchedEffect(uiState.showMessageError) {

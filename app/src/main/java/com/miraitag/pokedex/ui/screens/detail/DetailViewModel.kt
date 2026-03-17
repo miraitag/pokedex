@@ -2,9 +2,9 @@ package com.miraitag.pokedex.ui.screens.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.miraitag.pokedex.data.repository.PokemonRepository
 import com.miraitag.pokedex.ui.mappers.toUiModel
-import kotlinx.coroutines.Dispatchers
+import com.miraitag.pokedex.usecases.FindPokemonByNameUseCase
+import com.miraitag.pokedex.usecases.ToggleFavoriteUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -13,10 +13,11 @@ import kotlinx.coroutines.launch
 
 class DetailViewModel(
     pokemonName: String,
-    private val repository: PokemonRepository
+    findPokemonByNameUseCase: FindPokemonByNameUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
-    val uiState: StateFlow<DetailUiState> = repository.findPokemonByName(pokemonName)
+    val uiState: StateFlow<DetailUiState> = findPokemonByNameUseCase(name = pokemonName)
         .map { pokemon -> DetailUiState(pokemon = pokemon?.toUiModel()) }
         .stateIn(
             scope = viewModelScope,
@@ -25,9 +26,9 @@ class DetailViewModel(
         )
 
     fun onFavoritePokemon() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             uiState.value.pokemon?.let {
-                repository.toggleFavorite(name = it.name)
+                toggleFavoriteUseCase(name = it.name)
             }
         }
     }

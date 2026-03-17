@@ -1,6 +1,6 @@
 [versions]
 agp = "9.1.0"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kotlinxSerialization = "1.10.0"
 coreKtx = "1.18.0"
 junit = "4.13.2"
@@ -15,6 +15,8 @@ navigationComposeLifecycleViewmodel3 = "2.10.0"
 retrofit = "3.0.0"
 roomKtx = "2.8.4"
 ksp = "2.3.6"
+jetbrainsKotlinJvm = "2.3.20"
+kotlinxCoroutines = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +36,9 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomKtx" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomKtx" }
+androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomKtx" }
+
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 
 compose-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 compose-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
@@ -52,7 +57,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 
 [bundles]
 compose-icons = [
