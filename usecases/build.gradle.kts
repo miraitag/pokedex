@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java-library")
+    id("miraitag.pokedex.di.library")
     alias(libs.plugins.jetbrains.kotlin.jvm)
 }
 java {

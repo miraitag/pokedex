@@ -13,5 +13,13 @@ gradlePlugin {
             id = "miraitag.pokedex.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
+        register("diLibrary") {
+            id = "miraitag.pokedex.di.library"
+            implementationClass = "DiLibraryConventionPlugin"
+        }
+        register("diLibraryCompose") {
+            id = "miraitag.pokedex.di.library.compose"
+            implementationClass = "DiLibraryComposeConventionPlugin"
+        }
     }
 }
