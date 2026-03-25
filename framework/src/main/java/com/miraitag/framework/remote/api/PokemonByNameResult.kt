@@ -1,4 +1,4 @@
-package com.miraitag.pokedex.framework.remote.api
+package com.miraitag.framework.remote.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

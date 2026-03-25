@@ -1,4 +1,4 @@
-package com.miraitag.pokedex.framework.database
+package com.miraitag.framework.database
 
 import androidx.room.TypeConverter
 import com.miraitag.pokedex.data.entities.PokemonEntity

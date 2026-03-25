@@ -1,29 +1,18 @@
 package com.miraitag.pokedex.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.miraitag.pokedex.App
-import com.miraitag.pokedex.framework.database.PokemonLocalDataSourceImpl
-import com.miraitag.pokedex.framework.remote.api.PokemonClient
-import com.miraitag.pokedex.framework.remote.PokemonRemoteDataSourceImpl
-import com.miraitag.pokedex.data.repository.PokemonRepository
 import com.miraitag.pokedex.ui.model.Pokemon
 import com.miraitag.pokedex.ui.screens.detail.DetailScreen
-import com.miraitag.pokedex.ui.screens.detail.DetailViewModel
 import com.miraitag.pokedex.ui.screens.home.HomeScreen
-import com.miraitag.pokedex.ui.screens.home.HomeViewModel
-import com.miraitag.pokedex.usecases.FetchPokemonAndSaveByNameUseCase
-import com.miraitag.pokedex.usecases.FetchPokemonsUseCase
-import com.miraitag.pokedex.usecases.FindPokemonByNameUseCase
-import com.miraitag.pokedex.usecases.ToggleFavoriteUseCase
 import kotlinx.serialization.Serializable
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Serializable
 data object Home : NavKey
@@ -34,13 +23,6 @@ data class Detail(val pokemon: Pokemon) : NavKey
 @Composable
 fun NavigationScreen() {
     val backStack = rememberNavBackStack(Home)
-    val app = LocalContext.current.applicationContext as App
-    val pokemonRepository = PokemonRepository(
-        localDataSource = PokemonLocalDataSourceImpl(
-            pokemonDao = app.db.pokemonDao()
-        ),
-        remoteDataSource = PokemonRemoteDataSourceImpl(pokemonService = PokemonClient.instance)
-    )
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
@@ -55,27 +37,13 @@ fun NavigationScreen() {
                 HomeScreen(
                     onPokemonClick = { pokemon ->
                         backStack.add(Detail(pokemon = pokemon))
-                    },
-                    viewModel = viewModel {
-                        HomeViewModel(
-                            fetchPokemonsUseCase = FetchPokemonsUseCase(pokemonRepository),
-                            fetchPokemonAndSaveByNameUseCase = FetchPokemonAndSaveByNameUseCase(
-                                pokemonRepository
-                            )
-                        )
                     }
                 )
             }
             entry<Detail> {
                 DetailScreen(
                     pokemon = it.pokemon,
-                    viewModel = viewModel {
-                        DetailViewModel(
-                            pokemonName = it.pokemon.name,
-                            findPokemonByNameUseCase = FindPokemonByNameUseCase(pokemonRepository),
-                            toggleFavoriteUseCase = ToggleFavoriteUseCase(pokemonRepository)
-                        )
-                    },
+                    viewModel = koinViewModel(parameters = { parametersOf(it.pokemon.name) }),
                     onBack = { backStack.removeLastOrNull() }
                 )
             }

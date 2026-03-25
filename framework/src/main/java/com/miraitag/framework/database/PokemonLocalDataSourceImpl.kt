@@ -1,10 +1,10 @@
-package com.miraitag.pokedex.framework.database
+package com.miraitag.framework.database
 
-import com.miraitag.pokedex.data.local.PokemonLocalDataSource
 import com.miraitag.pokedex.data.entities.PokemonEntity
+import com.miraitag.pokedex.data.local.PokemonLocalDataSource
 import kotlinx.coroutines.flow.Flow
 
-class PokemonLocalDataSourceImpl(
+internal class PokemonLocalDataSourceImpl(
     private val pokemonDao: PokemonDao
 ) : PokemonLocalDataSource {
 

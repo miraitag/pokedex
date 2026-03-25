@@ -1,4 +1,4 @@
-package com.miraitag.pokedex.framework.remote.api
+package com.miraitag.framework.remote.api
 
 import retrofit2.http.GET
 import retrofit2.http.Path

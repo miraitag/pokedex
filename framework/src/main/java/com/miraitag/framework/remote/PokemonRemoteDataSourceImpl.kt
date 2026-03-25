@@ -1,11 +1,11 @@
-package com.miraitag.pokedex.framework.remote
+package com.miraitag.framework.remote
 
+import com.miraitag.framework.remote.api.PokemonByNameResult
+import com.miraitag.framework.remote.api.PokemonService
 import com.miraitag.pokedex.data.entities.PokemonEntity
-import com.miraitag.pokedex.framework.remote.api.PokemonByNameResult
-import com.miraitag.pokedex.framework.remote.api.PokemonService
 import com.miraitag.pokedex.data.remote.PokemonRemoteDataSource
 
-class PokemonRemoteDataSourceImpl(
+internal class PokemonRemoteDataSourceImpl(
     private val pokemonService: PokemonService
 ) : PokemonRemoteDataSource {
 

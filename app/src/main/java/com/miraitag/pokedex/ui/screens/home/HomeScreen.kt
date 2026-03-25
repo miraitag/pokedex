@@ -53,6 +53,7 @@ import com.miraitag.pokedex.ui.components.LoadingProgressIndicator
 import com.miraitag.pokedex.ui.model.Pokemon
 import com.miraitag.pokedex.ui.theme.PokedexTheme
 import com.miraitag.pokedex.ui.theme.color.PokemonTheme
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun Screen(content: @Composable () -> Unit) {
@@ -69,7 +70,7 @@ fun Screen(content: @Composable () -> Unit) {
 @Composable
 fun HomeScreen(
     onPokemonClick: (Pokemon) -> Unit,
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel = koinViewModel()
 ) {
 
     val context: Context = LocalContext.current

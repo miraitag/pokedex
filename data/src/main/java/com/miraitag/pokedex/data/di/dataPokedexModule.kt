@@ -4,6 +4,6 @@ import com.miraitag.pokedex.data.repository.PokemonRepository
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 
-val dataPokemonModule = module {
+val dataPokedexModule = module {
     factoryOf(::PokemonRepository)
 }

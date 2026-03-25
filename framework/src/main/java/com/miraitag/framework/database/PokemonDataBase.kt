@@ -1,4 +1,4 @@
-package com.miraitag.pokedex.framework.database
+package com.miraitag.framework.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -11,6 +11,6 @@ import com.miraitag.pokedex.data.entities.PokemonEntity
     exportSchema = false
 )
 @TypeConverters(PokemonConverters::class)
-abstract class PokemonDataBase : RoomDatabase() {
+internal abstract class PokemonDataBase : RoomDatabase() {
     abstract fun pokemonDao(): PokemonDao
 }

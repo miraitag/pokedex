@@ -1,4 +1,4 @@
-package com.miraitag.pokedex.framework.database
+package com.miraitag.framework.database
 
 import androidx.room.Dao
 import androidx.room.Insert
