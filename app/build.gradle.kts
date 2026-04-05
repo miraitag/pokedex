@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ksp)
     id("miraitag.pokedex.application")
     id("miraitag.pokedex.di.library.compose")
+    alias(libs.plugins.android.junit5)
 }
 
 android {
@@ -34,6 +35,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
         }
     }
 }
@@ -69,11 +76,15 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.compose)
 
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.junit5)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.mockk.android)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

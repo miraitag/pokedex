@@ -19,4 +19,12 @@ dependencies {
     implementation(projects.data)
     implementation(projects.domain)
     implementation(libs.kotlinx.coroutines.core)
+
+    testImplementation(libs.bundles.junit5)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
